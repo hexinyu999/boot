@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.mapper.TbProductMapper">
+	<resultMap id="BaseResultMap" type="cn.domain.TbProduct">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="category_main_id" property="categoryMainId"
+			jdbcType="INTEGER" />
+		<result column="category_branch_id" property="categoryBranchId"
+			jdbcType="INTEGER" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="producing_area" property="producingArea"
+			jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="market_price" property="marketPrice" jdbcType="DECIMAL" />
+		<result column="sell_price" property="sellPrice" jdbcType="DECIMAL" />
+		<result column="sales_volume" property="salesVolume" jdbcType="INTEGER" />
+		<result column="picture" property="picture" jdbcType="VARCHAR" />
+		<result column="discount" property="discount" jdbcType="BIT" />
+		<result column="stock" property="stock" jdbcType="INTEGER" />
+	</resultMap>
+	<resultMap id="ResultMapWithBLOBs" type="cn.domain.TbProduct"
+		extends="BaseResultMap">
+		<result column="description" property="description" jdbcType="LONGVARCHAR" />
+	</resultMap>
+
+	<resultMap id="ProductSelf" type="cn.domain.TbProductVO">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="mainName" property="mainName" jdbcType="VARCHAR" />
+		<result column="branchName" property="branchName" jdbcType="VARCHAR" />
+		<result column="market_price" property="marketPrice" jdbcType="DECIMAL" />
+	</resultMap>
+
+	<!-- List<TbProductVO> selectBySelf(Integer id); -->
+	<select id="selectBySelf" parameterType="Integer" resultMap="ProductSelf">
+		SELECT DISTINCT p.id,p.name,main.name AS mainName,branch.name AS branchName,
+			   p.market_price
+		FROM tb_product AS p,tb_category_branch AS branch,tb_category_main AS main,
+			 tb_bill,tb_user,tb_bill_item
+		WHERE tb_user.id=tb_bill.bill_user_id 
+			AND tb_bill.id=tb_bill_item.bill_id 
+			AND tb_bill_item.product_id=p.id AND p.category_main_id=main.id 
+			AND p.category_branch_id=branch.id
+			AND tb_user.id=#{id}
+	</select>
+	
+	<sql id="Example_Where_Clause">
+		<where>
+			<foreach collection="oredCriteria" item="criteria" separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" suffix=")" prefixOverrides="and">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value} and
+									#{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach collection="criterion.value" item="listItem"
+										open="(" close=")" separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	<sql id="Update_By_Example_Where_Clause">
+		<where>
+			<foreach collection="example.oredCriteria" item="criteria"
+				separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" suffix=")" prefixOverrides="and">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value} and
+									#{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach collection="criterion.value" item="listItem"
+										open="(" close=")" separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	<sql id="Base_Column_List">
+		id, category_main_id, category_branch_id, name, producing_area,
+		create_time, market_price,
+		sell_price, sales_volume, picture, discount, stock
+	</sql>
+	<sql id="Blob_Column_List">
+		description
+	</sql>
+	<select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs"
+		parameterType="cn.domain.TbProductExample">
+		select
+		<if test="distinct">
+			distinct
+		</if>
+		<include refid="Base_Column_List" />
+		,
+		<include refid="Blob_Column_List" />
+		from tb_product
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+		<if test="orderByClause != null">
+			order by ${orderByClause}
+		</if>
+	</select>
+	<select id="selectByExample" resultMap="BaseResultMap"
+		parameterType="cn.domain.TbProductExample">
+		select
+		<if test="distinct">
+			distinct
+		</if>
+		<include refid="Base_Column_List" />
+		from tb_product
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+		<if test="orderByClause != null">
+			order by ${orderByClause}
+		</if>
+	</select>
+	<select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		,
+		<include refid="Blob_Column_List" />
+		from tb_product
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from tb_product
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<delete id="deleteByExample" parameterType="cn.domain.TbProductExample">
+		delete from tb_product
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+	</delete>
+	<insert id="insert" parameterType="cn.domain.TbProduct">
+		insert into tb_product (id, category_main_id, category_branch_id,
+		name, producing_area, create_time,
+		market_price, sell_price, sales_volume,
+		picture, discount, stock,
+		description)
+		values (#{id,jdbcType=INTEGER}, #{categoryMainId,jdbcType=INTEGER},
+		#{categoryBranchId,jdbcType=INTEGER},
+		#{name,jdbcType=VARCHAR}, #{producingArea,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+		#{marketPrice,jdbcType=DECIMAL}, #{sellPrice,jdbcType=DECIMAL},
+		#{salesVolume,jdbcType=INTEGER},
+		#{picture,jdbcType=VARCHAR}, #{discount,jdbcType=BIT}, #{stock,jdbcType=INTEGER},
+		#{description,jdbcType=LONGVARCHAR})
+	</insert>
+	<insert id="insertSelective" parameterType="cn.domain.TbProduct">
+		insert into tb_product
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="categoryMainId != null">
+				category_main_id,
+			</if>
+			<if test="categoryBranchId != null">
+				category_branch_id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="producingArea != null">
+				producing_area,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="marketPrice != null">
+				market_price,
+			</if>
+			<if test="sellPrice != null">
+				sell_price,
+			</if>
+			<if test="salesVolume != null">
+				sales_volume,
+			</if>
+			<if test="picture != null">
+				picture,
+			</if>
+			<if test="discount != null">
+				discount,
+			</if>
+			<if test="stock != null">
+				stock,
+			</if>
+			<if test="description != null">
+				description,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="categoryMainId != null">
+				#{categoryMainId,jdbcType=INTEGER},
+			</if>
+			<if test="categoryBranchId != null">
+				#{categoryBranchId,jdbcType=INTEGER},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="producingArea != null">
+				#{producingArea,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="marketPrice != null">
+				#{marketPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="sellPrice != null">
+				#{sellPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="salesVolume != null">
+				#{salesVolume,jdbcType=INTEGER},
+			</if>
+			<if test="picture != null">
+				#{picture,jdbcType=VARCHAR},
+			</if>
+			<if test="discount != null">
+				#{discount,jdbcType=BIT},
+			</if>
+			<if test="stock != null">
+				#{stock,jdbcType=INTEGER},
+			</if>
+			<if test="description != null">
+				#{description,jdbcType=LONGVARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<select id="countByExample" parameterType="cn.domain.TbProductExample"
+		resultType="java.lang.Integer">
+		select count(*) from tb_product
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+	</select>
+	<update id="updateByExampleSelective" parameterType="map">
+		update tb_product
+		<set>
+			<if test="record.id != null">
+				id = #{record.id,jdbcType=INTEGER},
+			</if>
+			<if test="record.categoryMainId != null">
+				category_main_id = #{record.categoryMainId,jdbcType=INTEGER},
+			</if>
+			<if test="record.categoryBranchId != null">
+				category_branch_id = #{record.categoryBranchId,jdbcType=INTEGER},
+			</if>
+			<if test="record.name != null">
+				name = #{record.name,jdbcType=VARCHAR},
+			</if>
+			<if test="record.producingArea != null">
+				producing_area = #{record.producingArea,jdbcType=VARCHAR},
+			</if>
+			<if test="record.createTime != null">
+				create_time = #{record.createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="record.marketPrice != null">
+				market_price = #{record.marketPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="record.sellPrice != null">
+				sell_price = #{record.sellPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="record.salesVolume != null">
+				sales_volume = #{record.salesVolume,jdbcType=INTEGER},
+			</if>
+			<if test="record.picture != null">
+				picture = #{record.picture,jdbcType=VARCHAR},
+			</if>
+			<if test="record.discount != null">
+				discount = #{record.discount,jdbcType=BIT},
+			</if>
+			<if test="record.stock != null">
+				stock = #{record.stock,jdbcType=INTEGER},
+			</if>
+			<if test="record.description != null">
+				description = #{record.description,jdbcType=LONGVARCHAR},
+			</if>
+		</set>
+		<if test="_parameter != null">
+			<include refid="Update_By_Example_Where_Clause" />
+		</if>
+	</update>
+	<update id="updateByExampleWithBLOBs" parameterType="map">
+		update tb_product
+		set id = #{record.id,jdbcType=INTEGER},
+		category_main_id = #{record.categoryMainId,jdbcType=INTEGER},
+		category_branch_id = #{record.categoryBranchId,jdbcType=INTEGER},
+		name = #{record.name,jdbcType=VARCHAR},
+		producing_area = #{record.producingArea,jdbcType=VARCHAR},
+		create_time = #{record.createTime,jdbcType=TIMESTAMP},
+		market_price = #{record.marketPrice,jdbcType=DECIMAL},
+		sell_price = #{record.sellPrice,jdbcType=DECIMAL},
+		sales_volume = #{record.salesVolume,jdbcType=INTEGER},
+		picture = #{record.picture,jdbcType=VARCHAR},
+		discount = #{record.discount,jdbcType=BIT},
+		stock = #{record.stock,jdbcType=INTEGER},
+		description = #{record.description,jdbcType=LONGVARCHAR}
+		<if test="_parameter != null">
+			<include refid="Update_By_Example_Where_Clause" />
+		</if>
+	</update>
+	<update id="updateByExample" parameterType="map">
+		update tb_product
+		set id = #{record.id,jdbcType=INTEGER},
+		category_main_id = #{record.categoryMainId,jdbcType=INTEGER},
+		category_branch_id = #{record.categoryBranchId,jdbcType=INTEGER},
+		name = #{record.name,jdbcType=VARCHAR},
+		producing_area = #{record.producingArea,jdbcType=VARCHAR},
+		create_time = #{record.createTime,jdbcType=TIMESTAMP},
+		market_price = #{record.marketPrice,jdbcType=DECIMAL},
+		sell_price = #{record.sellPrice,jdbcType=DECIMAL},
+		sales_volume = #{record.salesVolume,jdbcType=INTEGER},
+		picture = #{record.picture,jdbcType=VARCHAR},
+		discount = #{record.discount,jdbcType=BIT},
+		stock = #{record.stock,jdbcType=INTEGER}
+		<if test="_parameter != null">
+			<include refid="Update_By_Example_Where_Clause" />
+		</if>
+	</update>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.domain.TbProduct">
+		update tb_product
+		<set>
+			<if test="categoryMainId != null">
+				category_main_id = #{categoryMainId,jdbcType=INTEGER},
+			</if>
+			<if test="categoryBranchId != null">
+				category_branch_id = #{categoryBranchId,jdbcType=INTEGER},
+			</if>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="producingArea != null">
+				producing_area = #{producingArea,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="marketPrice != null">
+				market_price = #{marketPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="sellPrice != null">
+				sell_price = #{sellPrice,jdbcType=DECIMAL},
+			</if>
+			<if test="salesVolume != null">
+				sales_volume = #{salesVolume,jdbcType=INTEGER},
+			</if>
+			<if test="picture != null">
+				picture = #{picture,jdbcType=VARCHAR},
+			</if>
+			<if test="discount != null">
+				discount = #{discount,jdbcType=BIT},
+			</if>
+			<if test="stock != null">
+				stock = #{stock,jdbcType=INTEGER},
+			</if>
+			<if test="description != null">
+				description = #{description,jdbcType=LONGVARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKeyWithBLOBs" parameterType="cn.domain.TbProduct">
+		update tb_product
+		set category_main_id = #{categoryMainId,jdbcType=INTEGER},
+		category_branch_id = #{categoryBranchId,jdbcType=INTEGER},
+		name = #{name,jdbcType=VARCHAR},
+		producing_area = #{producingArea,jdbcType=VARCHAR},
+		create_time = #{createTime,jdbcType=TIMESTAMP},
+		market_price = #{marketPrice,jdbcType=DECIMAL},
+		sell_price = #{sellPrice,jdbcType=DECIMAL},
+		sales_volume = #{salesVolume,jdbcType=INTEGER},
+		picture = #{picture,jdbcType=VARCHAR},
+		discount = #{discount,jdbcType=BIT},
+		stock = #{stock,jdbcType=INTEGER},
+		description = #{description,jdbcType=LONGVARCHAR}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.domain.TbProduct">
+		update tb_product
+		set category_main_id = #{categoryMainId,jdbcType=INTEGER},
+		category_branch_id = #{categoryBranchId,jdbcType=INTEGER},
+		name = #{name,jdbcType=VARCHAR},
+		producing_area = #{producingArea,jdbcType=VARCHAR},
+		create_time = #{createTime,jdbcType=TIMESTAMP},
+		market_price = #{marketPrice,jdbcType=DECIMAL},
+		sell_price = #{sellPrice,jdbcType=DECIMAL},
+		sales_volume = #{salesVolume,jdbcType=INTEGER},
+		picture = #{picture,jdbcType=VARCHAR},
+		discount = #{discount,jdbcType=BIT},
+		stock = #{stock,jdbcType=INTEGER}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+</mapper>
